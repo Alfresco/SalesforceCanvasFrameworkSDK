@@ -203,7 +203,7 @@ public class CanvasLinkContext {
     public void setChatterFeedItemsUrl(String chatterFeedItemsUrl) {
         this.chatterFeedItemsUrl = chatterFeedItemsUrl;
     }
-    
+
     @Override
     public String toString()
     {

@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CanvasClient
 {
     private String OAuthToken;
+    private String RefreshToken;
     private String clientId;
     private String instanceId;
     private String targetOrigin;
@@ -56,6 +57,17 @@ public class CanvasClient
     @JsonProperty("oauthToken")
     public void setOAuthToken(String OAuthToken) {
         this.OAuthToken = OAuthToken;
+    }
+
+    @JsonProperty("refreshToken")
+    public String getRefreshToken()
+    {
+        return RefreshToken;
+    }
+
+    public void setRefreshToken(String RefreshToken)
+    {
+        this.RefreshToken = RefreshToken;
     }
 
     @JsonProperty("clientId")

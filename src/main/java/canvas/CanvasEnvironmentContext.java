@@ -40,6 +40,9 @@ public class CanvasEnvironmentContext {
     private Dimensions dimensions;
     private SystemVersion version;
     private Map<String,Object> parameters;
+    private String displayLocation;
+    private String subLocation;
+    private Record record;
 
     /**
      * Returns the url of the current location.
@@ -107,6 +110,87 @@ public class CanvasEnvironmentContext {
                uiTheme + "," +
                dimensions.toString() + "," +
                version.toString();
+    }
+
+    @JsonProperty("displayLocation")
+    public String getDisplayLocation()
+    {
+        return this.displayLocation;
+    }
+
+    public void setDisplayLocation(String displayLocation)
+    {
+        this.displayLocation = displayLocation;
+    }
+
+    @JsonProperty("subLocation")
+    public String getSubLocation()
+    {
+        return this.subLocation;
+    }
+
+    public void setSubLocation(String subLocation)
+    {
+        this.subLocation = subLocation;
+    }
+
+    @JsonProperty("record")
+    public CanvasEnvironmentContext.Record getRecord()
+    {
+        return this.record;
+    }
+
+    public void setRecord(CanvasEnvironmentContext.Record record)
+    {
+        this.record = record;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Record {
+        private String id;
+        private CanvasEnvironmentContext.Record.Attributes attributes;
+
+        @JsonProperty("Id")
+        public String getId() {
+            return this.id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        @JsonProperty("attributes")
+        public CanvasEnvironmentContext.Record.Attributes getAttributes() {
+            return this.attributes;
+        }
+
+        public void setAttributes(CanvasEnvironmentContext.Record.Attributes attributes) {
+            this.attributes = attributes;
+        }
+
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Attributes {
+            private String type;
+            private String url;
+
+            @JsonProperty("type")
+            public String getType() {
+                return this.type;
+            }
+
+            public void setType(String type) {
+                this.type = type;
+            }
+
+            @JsonProperty("url")
+            public String getUrl() {
+                return this.url;
+            }
+
+            public void setUrl(String url) {
+                this.url = url;
+            }
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown=true)

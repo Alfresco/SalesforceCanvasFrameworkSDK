@@ -105,7 +105,7 @@ public class CanvasRequest {
 
     /**
      * Unique information about this client (including oauth token). This information (in JSON) format needs to be
-     * included on all client side SDK calls. 
+     * included on all client side SDK calls.
      */
     @JsonProperty("client")
     public CanvasClient getClient() {
