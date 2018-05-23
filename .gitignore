@@ -9,3 +9,4 @@ target/
 .settings/
 .sts4-cache/
 .vscode/
+.idea/
