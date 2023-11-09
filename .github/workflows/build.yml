@@ -1,0 +1,48 @@
+name: SalesforceCanvasFrameworkSDK
+
+on:
+  workflow_call:
+
+env:
+  SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
+  NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  BRANCH_NAME: ${{ github.ref_name }}
+  GIT_PASSWORD: ${{ secrets.BOT_GITHUB_TOKEN }}
+  GIT_EMAIL: ${{ secrets.BOT_GITHUB_EMAIL }}
+  GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
+  GITHUB_EVENT: ${{ github.event_name }}
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        stage: [source_clear]
+      fail-fast: false
+    if: github.ref_name != 'master'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Alfresco/alfresco-build-tools/.github/actions/setup-java-build@v1.33.0
+      - uses: Alfresco/alfresco-build-tools/.github/actions/get-build-info@v1.33.0
+      - name: "Setup maven"
+        shell: bash
+        run: |
+          [ -d ${HOME}/.m2/ ] || mkdir -p ${HOME}/.m2/
+          cp -v _ci/settings.xml ${HOME}/.m2/ || cp -v .travis.settings.xml ${HOME}/.m2/settings.xml
+      - name: Cache the Maven packages to speed up build
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      - name: Run ${{ matrix.stage }}
+        if: ${{ ( matrix.stage != 'master') || matrix.stage == 'source_clear'  }}
+        run: |
+          bash _ci/init.sh
+          bash _ci/${{ matrix.stage }}.sh
+      - name: "Build"
+        run: |
+          bash _ci/init.sh
+          mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+          bash _ci/build.sh
