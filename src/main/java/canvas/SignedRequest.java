@@ -37,8 +37,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -52,6 +52,10 @@ import java.util.HashMap;
  */
 public class SignedRequest {
 
+    private SignedRequest() {
+        //Hide implicit public constuctor
+    }
+
     public static CanvasRequest verifyAndDecode(String input, String secret) throws SecurityException {
 
         String[] split = getParts(input);
@@ -60,13 +64,13 @@ public class SignedRequest {
         String encodedEnvelope = split[1];
 
         // Deserialize the json body
-        String json_envelope = new String(new Base64(true).decode(encodedEnvelope));
+        String jsonEnvelope = new String(new Base64(true).decode(encodedEnvelope));
         ObjectMapper mapper = new ObjectMapper();
         ObjectReader reader = mapper.readerFor(CanvasRequest.class);
         CanvasRequest canvasRequest;
         String algorithm;
         try {
-            canvasRequest = reader.readValue(json_envelope);
+            canvasRequest = reader.readValue(jsonEnvelope);
             algorithm = canvasRequest.getAlgorithm() == null ? "HMACSHA256" : canvasRequest.getAlgorithm();
         } catch (IOException e) {
             throw new SecurityException(String.format("Error [%s] deserializing JSON to Object [%s]", e.getMessage(), CanvasRequest.class.getName()), e);
@@ -87,7 +91,7 @@ public class SignedRequest {
         String encodedSig = split[0];
         String encodedEnvelope = split[1];
 
-        String json_envelope = new String(new Base64(true).decode(encodedEnvelope));
+        String jsonEnvelope = new String(new Base64(true).decode(encodedEnvelope));
         ObjectMapper mapper = new ObjectMapper();
 
         String algorithm;
@@ -95,7 +99,7 @@ public class SignedRequest {
         TypeReference<HashMap<String,Object>> typeRef
                 = new TypeReference<HashMap<String, Object>>() { };
         try {
-            HashMap<String,Object> o = mapper.readValue(json_envelope, typeRef);
+            HashMap<String,Object> o = mapper.readValue(jsonEnvelope, typeRef);
             writer = new StringWriter();
             mapper.writeValue(writer, o);
             algorithm = (String)o.get("algorithm");
@@ -117,8 +121,8 @@ public class SignedRequest {
             throw new SecurityException(String.format("Input [%s] doesn't look like a signed request", input));
         }
 
-        String[] split = input.split("[.]", 2);
-        return split;
+        return input.split("[.]", 2);
+
     }
 
     private static void verify(String secret, String algorithm, String encodedEnvelope, String encodedSig )
@@ -137,8 +141,9 @@ public class SignedRequest {
 
             // Check to see if the body was tampered with
             byte[] digest = mac.doFinal(encodedEnvelope.getBytes());
-            byte[] decode_sig = new Base64(true).decode(encodedSig);
-            if (! Arrays.equals(digest, decode_sig)) {
+            byte[] decodeSig = new Base64(true).decode(encodedSig);
+            
+            if (!MessageDigest.isEqual(digest, decodeSig)) {
                 String label = "Warning: Request was tampered with";
                 throw new SecurityException(label);
             }
